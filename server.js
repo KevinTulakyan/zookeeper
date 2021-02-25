@@ -1,6 +1,9 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const PORT = process.env.PORT || 3001;
 const app = express();
+app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 // parse incoming JSON data
 app.use(express.json());
@@ -50,11 +53,13 @@ function findById(id, animalsArray) {
     return result;
 }
 function createNewAnimal(body, animalsArray) {
-  console.log(body);
-  // our function's main code will go here!
-    
-  // return finished code to post route for response
-   return body;
+  const animal = body;
+  animalsArray.push(animal);
+  fs.writeFileSync(
+    path.join(__dirname, './data/animals.json'),
+    JSON.stringify({ animals: animalsArray }, null, 2)
+  );
+  return animal;
 }
 function validateAnimal(animal) {
   if (!animal.name || typeof animal.name !== 'string') {
@@ -101,6 +106,18 @@ app.post('/api/animals', (req, res) => {
     const animal = createNewAnimal(req.body, animals);
     res.json(animal);
   }
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/index.html'));
+});
+
+app.get('/animals', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/animals.html'));
+});
+
+app.get('/zookeepers', (req, res) => {
+  res.sendFile(path.join(__dirname, './public/zookeepers.html'));
 });
 
 app.listen(PORT, () => {
